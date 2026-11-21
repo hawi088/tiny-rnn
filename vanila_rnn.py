@@ -27,6 +27,7 @@ def forward_pass(x_sequence):
         #apply the activation function
         h = np.tanh(z)
         #store the hidden state
+        h_states.append(h)
         h_previous = h
     y_pred = Wy * h_states[-1] + by
     #calculate the loss (mean squared error)
