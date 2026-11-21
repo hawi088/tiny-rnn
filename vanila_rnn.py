@@ -33,3 +33,40 @@ def forward_pass(x_sequence):
     loss = 0.5 * (y_pred - y) ** 2
     return h_states, h_previous_states, y_pred, loss
 
+#trainingloop 
+for epoch in range(epochs):
+    #forward pass
+    h_states, h_previous_states, y_pred, loss = forward_pass(x_sequence)
+    #backward pass
+    dL_dy = y_pred - y
+    #Output layer gradients
+    dL_dWy = dL_dy * h_states[-1]
+    dL_dby = dL_dy
+    #Gradient entering the final hidden state
+    dh = dL_dy * Wy
+    #initialize RNN parameter gradients
+    dWx = 0.0
+    dWh = 0.0
+    dbh = 0.0
+    #Backward pass through time
+    for t in reversed(range(len(x_sequence))):
+        #Gradient w.r.t. the tanh activation
+        dh *= (1 - h_states[t] ** 2)
+        #Gradient w.r.t. the bias
+        dbh += dh
+        #Gradient w.r.t. the hidden-to-hidden weight
+        dWh += dh * h_previous_states[t]
+        #Gradient w.r.t. the input-to-hidden weight
+        dWx += dh * x_sequence[t]
+        #Gradient w.r.t. the previous hidden state
+        dh = dh * Wh
+
+    #Update RNN parameters
+    Wx -= lr * dWx
+    Wh -= lr * dWh
+    bh -= lr * dbh
+    Wy -= lr * dL_dWy
+    by -= lr * dL_dby
+
+    if epoch % 100 == 0:
+        print(f"Epoch {epoch}, Loss: {loss:.4f}, y_pred: {y_pred:.4f}")
